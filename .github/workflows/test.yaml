@@ -1,0 +1,61 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  php-cs-fixer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: intl, mbstring
+      - name: Run PHP CS Fixer
+        run: |
+          mkdir -p tools/php-cs-fixer
+          composer require --working-dir=tools/php-cs-fixer friendsofphp/php-cs-fixer:3.57.1 kubawerlos/php-cs-fixer-custom-fixers
+          tools/php-cs-fixer/vendor/bin/php-cs-fixer fix --diff --dry-run -vvv --config=.php-cs-fixer.dist.php --show-progress=none
+  tests:
+    name: Test project
+    needs: [php-cs-fixer]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ['5.6', '7.0', '7.4', '8.1', '8.2']
+        dependency: [lowest, highest]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: intl, mbstring
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)"
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+      - name: Install dependencies
+        run: |
+          if [ "${{ matrix.dependency }}" == "lowest" ]; then
+            composer update --prefer-lowest --prefer-stable --no-progress --no-suggest
+          else
+            composer install --prefer-dist --no-progress --no-suggest
+          fi
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit

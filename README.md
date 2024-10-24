@@ -1,7 +1,7 @@
 VAT number validator
 ====================
 
-[![Build Status](https://travis-ci.org/antalaron/vat-number-validator.svg?branch=master)](https://travis-ci.org/antalaron/vat-number-validator) [![Coverage Status](https://coveralls.io/repos/github/antalaron/vat-number-validator/badge.svg)](https://coveralls.io/github/antalaron/vat-number-validator?branch=master) [![Latest Stable Version](https://poser.pugx.org/antalaron/vat-number-validator/v/stable)](https://packagist.org/packages/antalaron/vat-number-validator) [![Latest Unstable Version](https://poser.pugx.org/antalaron/vat-number-validator/v/unstable)](https://packagist.org/packages/antalaron/vat-number-validator) [![License](https://poser.pugx.org/antalaron/vat-number-validator/license)](https://packagist.org/packages/antalaron/vat-number-validator)
+[![PHP Tests](https://github.com/antalaron/vat-number-validator/actions/workflows/php.yml/badge.svg)](https://github.com/antalaron/vat-number-validator) [![Latest Stable Version](https://poser.pugx.org/antalaron/vat-number-validator/v/stable)](https://packagist.org/packages/antalaron/vat-number-validator) [![Latest Unstable Version](https://poser.pugx.org/antalaron/vat-number-validator/v/unstable)](https://packagist.org/packages/antalaron/vat-number-validator) [![License](https://poser.pugx.org/antalaron/vat-number-validator/license)](https://packagist.org/packages/antalaron/vat-number-validator)
 
 PHP library to validate VAT numbers.
 
