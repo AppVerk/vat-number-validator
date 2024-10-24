@@ -8,7 +8,7 @@
  */
 
 if (!@include __DIR__.'/../vendor/autoload.php') {
-    die('You must set up the project dependencies, run the following commands:
+    exit('You must set up the project dependencies, run the following commands:
 wget http://getcomposer.org/composer.phar
 php composer.phar install --dev
 ');
@@ -19,7 +19,7 @@ if (!class_exists('PHPUnit\Framework\Assert')) {
 }
 
 if (class_exists('Symfony\Component\Validator\Test\ConstraintValidatorTestCase')) {
-    class_alias('Symfony\Component\Validator\Test\ConstraintValidatorTestCase', 'Antalaron\Component\VatNumberValidator\Tests\AbstractConstraintValidatorTest');
+    class_alias('Symfony\Component\Validator\Test\ConstraintValidatorTestCase', 'Antalaron\Component\VatNumberValidator\Tests\AbstractConstraintValidatorMiddlewareTest');
 } else {
-    class_alias('Symfony\Component\Validator\Tests\Constraints\AbstractConstraintValidatorTest', 'Antalaron\Component\VatNumberValidator\Tests\AbstractConstraintValidatorTest');
+    class_alias('Symfony\Component\Validator\Tests\Constraints\AbstractConstraintValidatorTest', 'Antalaron\Component\VatNumberValidator\Tests\AbstractConstraintValidatorMiddlewareTest');
 }

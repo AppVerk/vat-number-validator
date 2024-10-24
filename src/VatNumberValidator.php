@@ -72,30 +72,26 @@ class VatNumberValidator extends ConstraintValidator
         '/^(SI)([1-9]\d{7})$/',                     // + Slovenia
         '/^(SK)([1-9]\d[2346-9]\d{7})$/',           // + Slovakia
     ];
-    
-    /**
-     *
-     * @var string Original VAT number 
-     */
-    protected $originalVAT = "";
 
     /**
-     * {@inheritdoc}
+     * @var string Original VAT number
      */
+    protected $originalVAT = '';
+
     public function validate($value, Constraint $constraint)
     {
         if (null === $value || '' === $value) {
             return;
         }
-        
-        //stored original VAT
+
+        // stored original VAT
         $this->originalVAT = $value;
 
         // Uppercase, remove spaces etc. from the VAT number to help validation
         $value = preg_replace('/(\s|-|\.)+/', '', strtoupper($value));
 
         // Check user callable first
-        if (null !== $constraint->extraVat && call_user_func($constraint->extraVat, $value)) {
+        if (null !== $constraint->extraVat && \call_user_func($constraint->extraVat, $value)) {
             return;
         }
 
@@ -122,7 +118,8 @@ class VatNumberValidator extends ConstraintValidator
 
         // If we reached this point, it is invalid
         $this->context->buildViolation($constraint->message)
-            ->addViolation();
+            ->addViolation()
+        ;
     }
 
     /**
@@ -139,7 +136,7 @@ class VatNumberValidator extends ConstraintValidator
         $temp = 0;
 
         // Extract the next digit and multiply by the appropriate multiplier
-        for ($i = 0; $i < 7; ++$i) {
+        for ($i = 0; 7 > $i; ++$i) {
             $temp = (int) $number[$i] * $multipliers[$i];
             if (9 < $temp) {
                 $total += floor($temp / 10) + $temp % 10;
@@ -156,7 +153,7 @@ class VatNumberValidator extends ConstraintValidator
 
         // Compare it with the last character of the VAT number. If it's the
         // same, then it's valid
-        return $total === (int) $number[7];
+        return (int) $number[7] === $total;
     }
 
     /**
@@ -169,7 +166,7 @@ class VatNumberValidator extends ConstraintValidator
     private function BEcheck($number)
     {
         // Nine digit numbers have a 0 inserted at the front.
-        if (9 === strlen($number)) {
+        if (9 === \strlen($number)) {
             $number = '0'.$number;
         }
 
@@ -191,25 +188,25 @@ class VatNumberValidator extends ConstraintValidator
     private function BGcheck($number)
     {
         // Check the check digit of 9 digit Bulgarian VAT numbers.
-        if (9 === strlen($number)) {
+        if (9 === \strlen($number)) {
             $total = 0;
 
             // First try to calculate the check digit using the first multipliers
             $temp = 0;
-            for ($i = 0; $i < 8; ++$i) {
+            for ($i = 0; 8 > $i; ++$i) {
                 $temp += (int) $number[$i] * ($i + 1);
             }
 
             // See if we have a check digit yet
             $total = $temp % 11;
             if (10 !== $total) {
-                return $total === (int) substr($number, 8);
+                return (int) substr($number, 8) === $total;
             }
 
             // We got a modulus of 10 before so we have to keep going. Calculate
             // the new check digit using the different multipliers
             $temp = 0;
-            for ($i = 0; $i < 8; ++$i) {
+            for ($i = 0; 8 > $i; ++$i) {
                 $temp += (int) $number[$i] * ($i + 3);
             }
 
@@ -220,25 +217,25 @@ class VatNumberValidator extends ConstraintValidator
                 $total = 0;
             }
 
-            return $total === (int) substr($number, 8);
+            return (int) substr($number, 8) === $total;
         }
 
         if (0 !== preg_match('/^\d\d[0-5]\d[0-3]\d\d{4}$/', $number)) {
             // Check month
             $month = (int) substr($number, 2, 2);
-            if (($month > 0 && $month < 13) ||
-                ($month > 20 && $month < 33) ||
-                ($month > 40 && $month < 53)
+            if ((0 < $month && 13 > $month)
+                || (20 < $month && 33 > $month)
+                || (40 < $month && 53 > $month)
             ) {
                 // Extract the next digit and multiply by the counter.
                 $multipliers = [2, 4, 8, 5, 10, 9, 7, 3, 6];
                 $total = 0;
-                for ($i = 0; $i < 9; ++$i) {
+                for ($i = 0; 9 > $i; ++$i) {
                     $total += (int) $number[$i] * $multipliers[$i];
                 }
 
                 // Establish check digit.
-                $total = $total % 11;
+                $total %= 11;
                 if (10 === $total) {
                     $total = 0;
                 }
@@ -256,7 +253,7 @@ class VatNumberValidator extends ConstraintValidator
         // Extract the next digit and multiply by the counter.
         $multipliers = [21, 19, 17, 13, 11, 9, 7, 3, 1];
         $total = 0;
-        for ($i = 0; $i < 9; ++$i) {
+        for ($i = 0; 9 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
@@ -271,7 +268,7 @@ class VatNumberValidator extends ConstraintValidator
         // Extract the next digit and multiply by the counter.
         $multipliers = [4, 3, 2, 7, 6, 5, 4, 3, 2];
         $total = 0;
-        for ($i = 0; $i < 9; ++$i) {
+        for ($i = 0; 9 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
@@ -285,7 +282,7 @@ class VatNumberValidator extends ConstraintValidator
 
         // Check to see if the check digit given is correct, If not, we have
         // an error with the VAT number
-        return $total === (int) $number[9];
+        return (int) $number[9] === $total;
     }
 
     /**
@@ -299,7 +296,7 @@ class VatNumberValidator extends ConstraintValidator
     {
         $multipliers = [5, 4, 3, 2, 7, 6, 5, 4];
         $total = 0;
-        for ($i = 0; $i < 8; ++$i) {
+        for ($i = 0; 8 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
@@ -313,7 +310,7 @@ class VatNumberValidator extends ConstraintValidator
 
         // Check to see if the check digit given is correct, If not, we have
         // an error with the VAT number
-        return $total === (int) $number[8];
+        return (int) $number[8] === $total;
     }
 
     /**
@@ -332,7 +329,7 @@ class VatNumberValidator extends ConstraintValidator
 
         // Extract the next digit and multiply by the counter.
         $total = 0;
-        for ($i = 0; $i < 8; ++$i) {
+        for ($i = 0; 8 > $i; ++$i) {
             $temp = (int) $number[$i];
             if (0 === $i % 2) {
                 if (0 === $temp) {
@@ -353,8 +350,8 @@ class VatNumberValidator extends ConstraintValidator
         }
 
         // Establish check digit using modulus 26, and translate to char. equivalent.
-        $total = $total % 26;
-        $total = chr($total + 65);
+        $total %= 26;
+        $total = \chr($total + 65);
 
         // Check to see if the check digit given is correct
         return $number[8] === $total;
@@ -383,7 +380,7 @@ class VatNumberValidator extends ConstraintValidator
         // Legal entities
         if (0 !== preg_match($czExpr[0], $number)) {
             // Extract the next digit and multiply by the counter.
-            for ($i = 0; $i < 7; ++$i) {
+            for ($i = 0; 7 > $i; ++$i) {
                 $total += (int) $number[$i] * $multipliers[$i];
             }
 
@@ -405,7 +402,7 @@ class VatNumberValidator extends ConstraintValidator
         // Individuals type 2 (Special Cases) - 9 digits including check digit
         elseif (0 !== preg_match($czExpr[2], $number)) {
             // Extract the next digit and multiply by the counter.
-            for ($i = 0; $i < 7; ++$i) {
+            for ($i = 0; 7 > $i; ++$i) {
                 $total += (int) $number[$i + 1] * $multipliers[$i];
             }
 
@@ -449,7 +446,7 @@ class VatNumberValidator extends ConstraintValidator
         $product = 10;
         $sum = 0;
         $checkDigit = 0;
-        for ($i = 0; $i < 8; ++$i) {
+        for ($i = 0; 8 > $i; ++$i) {
             // Extract the next digit and implement peculiar algorithm!.
             $sum = ((int) $number[$i] + $product) % 10;
 
@@ -485,12 +482,12 @@ class VatNumberValidator extends ConstraintValidator
         $multipliers = [2, 7, 6, 5, 4, 3, 2, 1];
 
         // Extract the next digit and multiply by the counter.
-        for ($i = 0; $i < 8; ++$i) {
+        for ($i = 0; 8 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
         // Establish check digit.
-        $total = $total % 11;
+        $total %= 11;
 
         // The remainder should be 0 for it to be valid.
         return 0 === $total;
@@ -509,7 +506,7 @@ class VatNumberValidator extends ConstraintValidator
         $multipliers = [3, 7, 1, 3, 7, 1, 3, 7];
 
         // Extract the next digit and multiply by the counter.
-        for ($i = 0; $i < 8; ++$i) {
+        for ($i = 0; 8 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
@@ -535,18 +532,18 @@ class VatNumberValidator extends ConstraintValidator
         $total = 0;
         $multipliers = [256, 128, 64, 32, 16, 8, 4, 2];
 
-        //eight character numbers should be prefixed with an 0.
-        if (8 === strlen($number)) {
+        // eight character numbers should be prefixed with an 0.
+        if (8 === \strlen($number)) {
             $number = '0'.$number;
         }
 
         // Extract the next digit and multiply by the counter.
-        for ($i = 0; $i < 8; ++$i) {
+        for ($i = 0; 8 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
         // Establish check digit.
-        $total = $total % 11;
+        $total %= 11;
         if (9 < $total) {
             $total = 0;
         }
@@ -578,7 +575,7 @@ class VatNumberValidator extends ConstraintValidator
         // National juridical entities
         if (0 !== preg_match($esExpr[0], $number)) {
             // Extract the next digit and multiply by the counter.
-            for ($i = 0; $i < 7; ++$i) {
+            for ($i = 0; 7 > $i; ++$i) {
                 $temp = (int) $number[$i + 1] * $multipliers[$i];
                 if (9 < $temp) {
                     $total += floor($temp / 10) + $temp % 10;
@@ -599,7 +596,7 @@ class VatNumberValidator extends ConstraintValidator
         // Juridical entities other than national ones
         elseif (0 !== preg_match($esExpr[1], $number)) {
             // Extract the next digit and multiply by the counter.
-            for ($i = 0; $i < 7; ++$i) {
+            for ($i = 0; 7 > $i; ++$i) {
                 $temp = (int) $number[$i + 1] * $multipliers[$i];
                 if (9 < $temp) {
                     $total += floor($temp / 10) + $temp % 10;
@@ -610,7 +607,7 @@ class VatNumberValidator extends ConstraintValidator
 
             // Now calculate the check digit itself.
             $total = 10 - $total % 10;
-            $total = chr($total + 64);
+            $total = \chr($total + 64);
 
             // Compare it with the last character of the VAT number. If it's the same, then it's valid.
             return $total === $number[8];
@@ -626,13 +623,13 @@ class VatNumberValidator extends ConstraintValidator
 
             $charString = 'TRWAGMYFPDXBNJZSQVHLCKE';
 
-            return $tempNumber[8] === $charString[(int) substr($tempNumber, 0, 8) % 23];
+            return $charString[(int) substr($tempNumber, 0, 8) % 23] === $tempNumber[8];
         }
         // Personal number (NIF) (starting with K, L, M, or X)
         elseif (0 !== preg_match($esExpr[3], $number)) {
             $charString = 'TRWAGMYFPDXBNJZSQVHLCKE';
 
-            return $tempNumber[8] === $charString[(int) substr($tempNumber, 1, 7) % 23];
+            return $charString[(int) substr($tempNumber, 1, 7) % 23] === $tempNumber[8];
         }
 
         return false;
@@ -667,7 +664,7 @@ class VatNumberValidator extends ConstraintValidator
         $multipliers = [7, 9, 10, 5, 8, 4, 2];
 
         // Extract the next digit and multiply by the counter.
-        for ($i = 0; $i < 7; ++$i) {
+        for ($i = 0; 7 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
@@ -691,7 +688,7 @@ class VatNumberValidator extends ConstraintValidator
     private function FRcheck($number)
     {
         // Valid for 32-bit systems
-        if (4 === PHP_INT_SIZE) {
+        if (4 === \PHP_INT_SIZE) {
             return true;
         }
 
@@ -742,7 +739,7 @@ class VatNumberValidator extends ConstraintValidator
         $no = (int) substr($number, 0, 7);
 
         // Extract the next digit and multiply by the counter.
-        for ($i = 0; $i < 7; ++$i) {
+        for ($i = 0; 7 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
@@ -751,30 +748,30 @@ class VatNumberValidator extends ConstraintValidator
 
         // Establish check digits by subtracting 97 from total until negative.
         $cd = $total;
-        while ($cd > 0) {
-            $cd = $cd - 97;
+        while (0 < $cd) {
+            $cd -= 97;
         }
 
         // Get the absolute value and compare it with the last two characters of the VAT number. If the
         // same, then it is a valid traditional check digit. However, even then the number must fit within
         // certain specified ranges.
         $cd = abs($cd);
-        if ((int) substr($number, 7, 2) === $cd &&
-            $no < 9990001 &&
-            ($no < 100000 || $no > 999999) &&
-            ($no < 9490001 || $no > 9700000)
+        if ((int) substr($number, 7, 2) === $cd
+            && 9990001 > $no
+            && (100000 > $no || 999999 < $no)
+            && (9490001 > $no || 9700000 < $no)
         ) {
             return true;
         }
 
         // Now try the new method by subtracting 55 from the check digit if we can - else add 42
-        if ($cd >= 55) {
-            $cd = $cd - 55;
+        if (55 <= $cd) {
+            $cd -= 55;
         } else {
-            $cd = $cd + 42;
+            $cd += 42;
         }
 
-        return (int) substr($number, 7, 2) === $cd && $no > 1000000;
+        return (int) substr($number, 7, 2) === $cd && 1000000 < $no;
     }
 
     /**
@@ -791,7 +788,7 @@ class VatNumberValidator extends ConstraintValidator
         $sum = 0;
         $checkDigit = 0;
 
-        for ($i = 0; $i < 10; ++$i) {
+        for ($i = 0; 10 > $i; ++$i) {
             // Extract the next digit and implement the algorithm
             $sum = ((int) $number[$i] + $product) % 10;
             if (0 === $sum) {
@@ -818,7 +815,7 @@ class VatNumberValidator extends ConstraintValidator
         $multipliers = [9, 7, 3, 1, 9, 7, 3];
 
         // Extract the next digit and multiply by the counter
-        for ($i = 0; $i < 7; ++$i) {
+        for ($i = 0; 7 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
@@ -830,7 +827,7 @@ class VatNumberValidator extends ConstraintValidator
 
         // Compare it with the last character of the VAT number. If it's the
         // same, then it's valid
-        return $total === (int) $number[7];
+        return (int) $number[7] === $total;
     }
 
     /**
@@ -851,7 +848,7 @@ class VatNumberValidator extends ConstraintValidator
         }
 
         // Extract the next digit and multiply by the counter.
-        for ($i = 0; $i < 7; ++$i) {
+        for ($i = 0; 7 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
@@ -866,11 +863,11 @@ class VatNumberValidator extends ConstraintValidator
         }
 
         // Establish check digit using modulus 23, and translate to char. equivalent.
-        $total = $total % 23;
+        $total %= 23;
         if (0 === $total) {
             $total = 'W';
         } else {
-            $total = chr($total + 64);
+            $total = \chr($total + 64);
         }
 
         // Compare it with the eighth character of the VAT number. If it's the same, then it's valid.
@@ -895,14 +892,14 @@ class VatNumberValidator extends ConstraintValidator
         }
 
         $temp = (int) substr($number, 7, 3);
-        if (($temp < 1) || ($temp > 201) && $temp !== 999 && $temp !== 888) {
+        if ((1 > $temp) || (201 < $temp) && 999 !== $temp && 888 !== $temp) {
             return false;
         }
 
         // Extract the next digit and multiply by the appropriate
-        for ($i = 0; $i < 10; ++$i) {
+        for ($i = 0; 10 > $i; ++$i) {
             $temp = (int) $number[$i] * $multipliers[$i];
-            if ($temp > 9) {
+            if (9 < $temp) {
                 $total += floor($temp / 10) + $temp % 10;
             } else {
                 $total += $temp;
@@ -911,7 +908,7 @@ class VatNumberValidator extends ConstraintValidator
 
         // Establish check digit.
         $total = 10 - $total % 10;
-        if ($total > 9) {
+        if (9 < $total) {
             $total = 0;
         }
 
@@ -929,7 +926,7 @@ class VatNumberValidator extends ConstraintValidator
     private function LTcheck($number)
     {
         // 9 character VAT numbers are for legal persons
-        if (9 === strlen($number)) {
+        if (9 === \strlen($number)) {
             // 8th character must be one
             if ('1' !== $number[7]) {
                 return false;
@@ -937,7 +934,7 @@ class VatNumberValidator extends ConstraintValidator
 
             // Extract the next digit and multiply by the counter+1.
             $total = 0;
-            for ($i = 0; $i < 8; ++$i) {
+            for ($i = 0; 8 > $i; ++$i) {
                 $total += (int) $number[$i] * ($i + 1);
             }
 
@@ -945,13 +942,13 @@ class VatNumberValidator extends ConstraintValidator
             if (10 === $total % 11) {
                 $multipliers = [3, 4, 5, 6, 7, 8, 9, 1];
                 $total = 0;
-                for ($i = 0; $i < 8; ++$i) {
+                for ($i = 0; 8 > $i; ++$i) {
                     $total += (int) $number[$i] * $multipliers[$i];
                 }
             }
 
             // Establish check digit.
-            $total = $total % 11;
+            $total %= 11;
             if (10 === $total) {
                 $total = 0;
             }
@@ -969,7 +966,7 @@ class VatNumberValidator extends ConstraintValidator
         // Extract the next digit and multiply by the counter+1.
         $total = 0;
         $multipliers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2];
-        for ($i = 0; $i < 11; ++$i) {
+        for ($i = 0; 11 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
@@ -977,13 +974,13 @@ class VatNumberValidator extends ConstraintValidator
         if (10 === $total % 11) {
             $multipliers = [3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4];
             $total = 0;
-            for ($i = 0; $i < 11; ++$i) {
+            for ($i = 0; 11 > $i; ++$i) {
                 $total += (int) $number[$i] * $multipliers[$i];
             }
         }
 
         // Establish check digit.
-        $total = $total % 11;
+        $total %= 11;
         if (10 === $total) {
             $total = 0;
         }
@@ -1024,7 +1021,7 @@ class VatNumberValidator extends ConstraintValidator
         $multipliers = [9, 1, 4, 8, 3, 10, 2, 5, 7, 6];
 
         // Extract the next digit and multiply by the counter.
-        for ($i = 0; $i < 10; ++$i) {
+        for ($i = 0; 10 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
@@ -1057,7 +1054,7 @@ class VatNumberValidator extends ConstraintValidator
         $multipliers = [3, 4, 6, 7, 8, 9];
 
         // Extract the next digit and multiply by the counter.
-        for ($i = 0; $i < 6; ++$i) {
+        for ($i = 0; 6 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
@@ -1081,12 +1078,12 @@ class VatNumberValidator extends ConstraintValidator
         $multipliers = [9, 8, 7, 6, 5, 4, 3, 2];
 
         // Extract the next digit and multiply by the counter.
-        for ($i = 0; $i < 8; ++$i) {
+        for ($i = 0; 8 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
         // Establish check digits by getting modulus 11.
-        $total = $total % 11;
+        $total %= 11;
         if (9 < $total) {
             $total = 0;
         }
@@ -1095,10 +1092,10 @@ class VatNumberValidator extends ConstraintValidator
         if ((int) $number[8] === $total) {
             return true;
         }
-        
-        //Traditional dutch VAT does not match, try to check whether it is a valid sole proprietor vat number
-        
-       // take the original vat string
+
+        // Traditional dutch VAT does not match, try to check whether it is a valid sole proprietor vat number
+
+        // take the original vat string
         $vat = $this->originalVAT;
 
         // Each character in the string is looked at one at a time
@@ -1107,46 +1104,44 @@ class VatNumberValidator extends ConstraintValidator
         // The result of the conversion goes here
         $numericvat = null;
 
-        //part length splitting long numbers in modulo operations 
+        // part length splitting long numbers in modulo operations
         $partLength = 7;
-        
-        //constant divisor for calculation
+
+        // constant divisor for calculation
         $divisor = 97;
-        
-        for ($i = 0; $i < strlen($vat); $i++) {
 
-            // Pick up the next character from the vat string as Unicode 
-            $nextchar = ord(substr($vat, $i, $i + 1));
+        for ($i = 0; \strlen($vat) > $i; ++$i) {
+            // Pick up the next character from the vat string as Unicode
+            $nextchar = \ord(substr($vat, $i, $i + 1));
             // If it a '+' or a '*' convert to numeric 36 and 37 respectively
-            if ($nextchar > 41 && $nextchar < 44) {
-                $nextchar = $nextchar - 6;
+            if (41 < $nextchar && 44 > $nextchar) {
+                $nextchar -= 6;
 
-                // Convert 0 to 9 to 0 to 9 characters
-            } else if ($nextchar > 47 && $nextchar < 58) {
-                $nextchar = $nextchar - 48;
+            // Convert 0 to 9 to 0 to 9 characters
+            } elseif (47 < $nextchar && 58 > $nextchar) {
+                $nextchar -= 48;
 
-                // Convert A-Z to 10 to 35
-            } else if ($nextchar > 64 && $nextchar < 91) {
-                $nextchar = $nextchar - 55;
+            // Convert A-Z to 10 to 35
+            } elseif (64 < $nextchar && 91 > $nextchar) {
+                $nextchar -= 55;
             }
             // Add to convert test string
-            $numericvat = $numericvat . $nextchar;
+            $numericvat .= $nextchar;
         }
 
-        while (strlen($numericvat) > $partLength) {
+        while (\strlen($numericvat) > $partLength) {
             $part = substr($numericvat, 0, $partLength);
-            $numericvat = ($part % $divisor) . substr($numericvat, $partLength);
+            $numericvat = ($part % $divisor).substr($numericvat, $partLength);
         }
 
-        if (1 == ($numericvat % $divisor)) {
+        if (1 === ($numericvat % $divisor)) {
             return true;
         }
-        
-        
+
         // Neither - it must be invalid
         return false;
     }
-    
+
     /**
      * Checks the check digits of a Norwegian VAT number.
      *
@@ -1162,7 +1157,7 @@ class VatNumberValidator extends ConstraintValidator
         $multipliers = [3, 2, 7, 6, 5, 4, 3, 2];
 
         // Extract the next digit and multiply by the counter.
-        for ($i = 0; $i < 8; ++$i) {
+        for ($i = 0; 8 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
@@ -1189,12 +1184,12 @@ class VatNumberValidator extends ConstraintValidator
         $multipliers = [6, 5, 7, 2, 3, 4, 5, 6, 7];
 
         // Extract the next digit and multiply by the counter.
-        for ($i = 0; $i < 9; ++$i) {
+        for ($i = 0; 9 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
         // Establish check digits subtracting modulus 11 from 11.
-        $total = $total % 11;
+        $total %= 11;
         if (9 < $total) {
             $total = 0;
         }
@@ -1216,7 +1211,7 @@ class VatNumberValidator extends ConstraintValidator
         $multipliers = [9, 8, 7, 6, 5, 4, 3, 2];
 
         // Extract the next digit and multiply by the counter.
-        for ($i = 0; $i < 8; ++$i) {
+        for ($i = 0; 8 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
@@ -1242,10 +1237,10 @@ class VatNumberValidator extends ConstraintValidator
         $multipliers = [7, 5, 3, 2, 1, 7, 5, 3, 2];
 
         // Extract the next digit and multiply by the counter.
-        $VATlen = strlen($number);
+        $VATlen = \strlen($number);
         $total = 0;
-        $multipliers = array_slice($multipliers, 1 - $VATlen);
-        for ($i = 0; $i < $VATlen - 1; ++$i) {
+        $multipliers = \array_slice($multipliers, 1 - $VATlen);
+        for ($i = 0; $VATlen - 1 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
@@ -1271,7 +1266,7 @@ class VatNumberValidator extends ConstraintValidator
         $product = 10;
         $sum = 0;
 
-        for ($i = 0; $i < 8; ++$i) {
+        for ($i = 0; 8 > $i; ++$i) {
             // Extract the next digit and implement the algorithm
             $sum = ((int) $number[$i] + $product) % 10;
             if (0 === $sum) {
@@ -1296,45 +1291,45 @@ class VatNumberValidator extends ConstraintValidator
     private function RUcheck($number)
     {
         // 10 digit INN numbers
-        if (10 === strlen($number)) {
+        if (10 === \strlen($number)) {
             $total = 0;
             $multipliers = [2, 4, 10, 3, 5, 9, 4, 6, 8, 0];
 
-            for ($i = 0; $i < 10; ++$i) {
+            for ($i = 0; 10 > $i; ++$i) {
                 $total += (int) $number[$i] * $multipliers[$i];
             }
 
-            $total = $total % 11;
+            $total %= 11;
             if (9 < $total) {
-                $total = $total % 10;
+                $total %= 10;
             }
 
             // Compare it with the last character of the VAT number. If it is the same, then it's valid
             return (int) $number[9] === $total;
         }
         // 12 digit INN numbers
-        elseif (12 === strlen($number)) {
+        elseif (12 === \strlen($number)) {
             $total1 = 0;
             $multipliers1 = [7, 2, 4, 10, 3, 5, 9, 4, 6, 8, 0];
             $total2 = 0;
             $multipliers2 = [3, 7, 2, 4, 10, 3, 5, 9, 4, 6, 8, 0];
 
-            for ($i = 0; $i < 11; ++$i) {
+            for ($i = 0; 11 > $i; ++$i) {
                 $total1 += (int) $number[$i] * $multipliers1[$i];
             }
 
-            $total1 = $total1 % 11;
+            $total1 %= 11;
             if (9 < $total1) {
-                $total1 = $total1 % 10;
+                $total1 %= 10;
             }
 
-            for ($i = 0; $i < 11; ++$i) {
+            for ($i = 0; 11 > $i; ++$i) {
                 $total2 += (int) $number[$i] * $multipliers2[$i];
             }
 
-            $total2 = $total2 % 11;
+            $total2 %= 11;
             if (9 < $total2) {
-                $total2 = $total2 % 10;
+                $total2 %= 10;
             }
 
             // Compare the first check with the 11th character and the second
@@ -1357,14 +1352,14 @@ class VatNumberValidator extends ConstraintValidator
     {
         // Calculate R where R = R1 + R3 + R5 + R7 + R9, and Ri = INT(Ci/5) + (Ci*2) modulo 10
         $R = 0;
-        for ($i = 0; $i < 9; $i = $i + 2) {
+        for ($i = 0; 9 > $i; $i += 2) {
             $digit = (int) $number[$i];
             $R += floor($digit / 5) + ((2 * $digit) % 10);
         }
 
         // Calculate S where S = C2 + C4 + C6 + C8
         $S = 0;
-        for ($i = 1; $i < 9; $i = $i + 2) {
+        for ($i = 1; 9 > $i; $i += 2) {
             $S += (int) $number[$i];
         }
 
@@ -1388,7 +1383,7 @@ class VatNumberValidator extends ConstraintValidator
         $multipliers = [8, 7, 6, 5, 4, 3, 2];
 
         // Extract the next digit and multiply by the counter.
-        for ($i = 0; $i < 7; ++$i) {
+        for ($i = 0; 7 > $i; ++$i) {
             $total += (int) $number[$i] * $multipliers[$i];
         }
 
@@ -1413,7 +1408,7 @@ class VatNumberValidator extends ConstraintValidator
     private function SKcheck($number)
     {
         // Valid for 32-bit systems
-        if (4 === PHP_INT_SIZE) {
+        if (4 === \PHP_INT_SIZE) {
             return true;
         }
 

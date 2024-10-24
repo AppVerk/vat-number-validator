@@ -22,19 +22,16 @@ use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
  */
 class VatNumber extends Constraint
 {
-    const MESSAGE = 'Not a VAT number.';
+    public const MESSAGE = 'Not a VAT number.';
 
     public $message = self::MESSAGE;
     public $extraVat;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($options = null)
     {
         parent::__construct($options);
 
-        if (null !== $this->extraVat && !is_callable($this->extraVat)) {
+        if (null !== $this->extraVat && !\is_callable($this->extraVat)) {
             throw new ConstraintDefinitionException('The option "extraVat" must be callable');
         }
     }

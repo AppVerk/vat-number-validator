@@ -10,15 +10,9 @@
 namespace Antalaron\Component\VatNumberValidator\Tests;
 
 use Antalaron\Component\VatNumberValidator\VatNumber;
-use Antalaron\Component\VatNumberValidator\VatNumberValidator;
 
 class VatNumberValidatorTest extends AbstractConstraintValidatorTest
 {
-    protected function createValidator()
-    {
-        return new VatNumberValidator();
-    }
-
     public function testNullIsValid()
     {
         $this->validator->validate(null, new VatNumber());
@@ -33,11 +27,12 @@ class VatNumberValidatorTest extends AbstractConstraintValidatorTest
     {
         $this->validator->validate($vatNumber, new VatNumber());
 
-        if ($valid || (4 === PHP_INT_SIZE && !$shouldWorkOn32bit)) {
+        if ($valid || (4 === \PHP_INT_SIZE && !$shouldWorkOn32bit)) {
             $this->assertNoViolation();
         } else {
             $this->buildViolation(VatNumber::MESSAGE)
-                ->assertRaised();
+                ->assertRaised()
+            ;
         }
     }
 
@@ -2129,7 +2124,8 @@ class VatNumberValidatorTest extends AbstractConstraintValidatorTest
     {
         $this->validator->validate('11316385-2-18', new VatNumber());
         $this->buildViolation(VatNumber::MESSAGE)
-            ->assertRaised();
+            ->assertRaised()
+        ;
     }
 
     public function testExtraVat()
@@ -2142,7 +2138,7 @@ class VatNumberValidatorTest extends AbstractConstraintValidatorTest
             $total = 0;
             $multipliers = [9, 7, 3, 1, 9, 7, 3];
 
-            for ($i = 0; $i < 7; ++$i) {
+            for ($i = 0; 7 > $i; ++$i) {
                 $total += (int) $number[$i] * $multipliers[$i];
             }
 
@@ -2151,7 +2147,7 @@ class VatNumberValidatorTest extends AbstractConstraintValidatorTest
                 $total = 0;
             }
 
-            return $total === (int) $number[7];
+            return (int) $number[7] === $total;
         }]));
 
         $this->assertNoViolation();
@@ -2162,6 +2158,8 @@ class VatNumberValidatorTest extends AbstractConstraintValidatorTest
      */
     public function testInvalidExtraVat()
     {
-        $this->validator->validate('11316385-2-18', new VatNumber(['extraVat' => new \stdClass()]));
+        $this->validator->validate('11316385-2-18', new VatNumber(['extraVat' => function ($number) {
+            return 'invalid';
+        }]));
     }
 }

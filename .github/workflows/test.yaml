@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-version: ['5.6', '7.0', '7.4', '8.1', '8.2']
+        php-version: ['7.4', '8.1', '8.2']
         dependency: [lowest, highest]
     steps:
       - name: Checkout code
@@ -39,11 +39,11 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: ${{ matrix.php-version }}
           extensions: intl, mbstring
       - name: Get composer cache directory
         id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)"
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
       - name: Cache composer dependencies
         uses: actions/cache@v4
         with:
