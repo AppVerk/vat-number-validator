@@ -1,5 +1,5 @@
 {
-    "name": "antalaron/vat-number-validator",
+    "name": "app-verk/vat-number-validator",
     "description": "PHP library to validate VAT numbers",
     "type": "library",
     "license": "MIT",
@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "symfony/validator": "^2.8|^3.0|^4.0|^5.0"
+        "symfony/validator": "^2.8|^3.0|^4.0|^5.0|^6.0"
     },
     "require-dev": {
         "phpunit/phpunit": "*"
