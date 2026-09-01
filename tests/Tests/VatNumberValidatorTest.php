@@ -11,10 +11,14 @@ namespace Antalaron\Component\VatNumberValidator\Tests;
 
 use Antalaron\Component\VatNumberValidator\VatNumber;
 use Antalaron\Component\VatNumberValidator\VatNumberValidator;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\Validator\ConstraintValidatorInterface;
+use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
+use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
-class VatNumberValidatorTest extends AbstractConstraintValidatorTest
+class VatNumberValidatorTest extends ConstraintValidatorTestCase
 {
-    protected function createValidator()
+    protected function createValidator(): ConstraintValidatorInterface
     {
         return new VatNumberValidator();
     }
@@ -26,9 +30,7 @@ class VatNumberValidatorTest extends AbstractConstraintValidatorTest
         $this->assertNoViolation();
     }
 
-    /**
-     * @dataProvider vatNumberProvider
-     */
+    #[DataProvider('vatNumberProvider')]
     public function testVatNumbers($vatNumber, $valid, $shouldWorkOn32bit = true)
     {
         $this->validator->validate($vatNumber, new VatNumber());
@@ -44,7 +46,7 @@ class VatNumberValidatorTest extends AbstractConstraintValidatorTest
     /**
      * @see http://www.braemoor.co.uk/software/vattest.php
      */
-    public function vatNumberProvider()
+    public static function vatNumberProvider(): array
     {
         return [
             // Austria
@@ -2157,11 +2159,10 @@ class VatNumberValidatorTest extends AbstractConstraintValidatorTest
         $this->assertNoViolation();
     }
 
-    /**
-     * @expectedException \Symfony\Component\Validator\Exception\ConstraintDefinitionException
-     */
     public function testInvalidExtraVat()
     {
+        $this->expectException(ConstraintDefinitionException::class);
+
         $this->validator->validate('11316385-2-18', new VatNumber(['extraVat' => new \stdClass()]));
     }
 }
